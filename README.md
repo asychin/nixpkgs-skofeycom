@@ -1,93 +1,63 @@
 # nixpkgs-skofeycom
 
-Personal Nix flakes collection. Each package is an independent flake.
+Personal Nix flakes collection.
 
 [![NixOS](https://img.shields.io/badge/NixOS-ready-blue?logo=nixos)](https://nixos.org)
+[![Build and Check Flake](https://github.com/asychin/nixpkgs-skofeycom/actions/workflows/ci.yml/badge.svg)](https://github.com/asychin/nixpkgs-skofeycom/actions/workflows/ci.yml)
 
 ## 📦 Available Packages
 
-See [PACKAGES.md](PACKAGES.md) for a list of available software and descriptions.
+See [PACKAGES.md](PACKAGES.md) for a full list.
 
-## 🚀 Installation
+- `antigravity` - Google Antigravity IDE
+- `waveterm` - Waveterm Terminal
 
-You can add individual packages to your configuration using the `?dir=` syntax.
+## 🚀 Usage
 
-### NixOS Configuration
+### 1. Add to `flake.nix`
 
-Add to your `flake.nix`:
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    
-    # Example: Adding Waveterm
-    waveterm = {
-      url = "github:asychin/nixpkgs-skofeycom?dir=waveterm";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-
-  outputs = { self, nixpkgs, waveterm, ... }: {
-    nixosConfigurations.your-hostname = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        # Import the module
-        waveterm.nixosModules.default
-        {
-          # Enable the program
-          programs.waveterm.enable = true;
-        }
-      ];
-    };
-  };
-}
-```
-
-### Home Manager Configuration
+Add this repository to your inputs. To save space and build time, we recommend reusing your system's `nixpkgs`:
 
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     
-    # Example: Adding Waveterm
-    waveterm = {
-      url = "github:asychin/nixpkgs-skofeycom?dir=waveterm";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    skofeycom.url = "github:asychin/nixpkgs-skofeycom";
+    # Optimization: Use your system's nixpkgs to avoid re-downloading/re-building common dependencies
+    skofeycom.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, waveterm, ... }: {
-    homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      modules = [
-        # Import the module
-        waveterm.homeManagerModules.default
-        {
-          # Enable the program
-          programs.waveterm.enable = true;
-        }
-      ];
-    };
+  outputs = { self, nixpkgs, skofeycom, ... }: {
+    # Your configuration...
   };
 }
 ```
 
-### Quick Run
+### 2. Install Packages
 
-You can run any package without installing it:
+You can install packages directly in your NixOS or Home Manager configuration:
+
+```nix
+# In home.nix or configuration.nix
+{ pkgs, inputs, ... }: {
+  environment.systemPackages = [ # or home.packages
+    inputs.skofeycom.packages.${pkgs.system}.antigravity
+    inputs.skofeycom.packages.${pkgs.system}.waveterm
+  ];
+}
+```
+
+### ⚡ Quick Run
+
+Run a package without installing:
 
 ```bash
-nix run github:asychin/nixpkgs-skofeycom?dir=waveterm
+nix run github:asychin/nixpkgs-skofeycom#waveterm
+# or
+nix run github:asychin/nixpkgs-skofeycom#antigravity
 ```
 
 ## 📄 License
 
 MIT License
-
-## Contributing
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding new packages or improving existing ones.
-
