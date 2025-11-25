@@ -196,10 +196,7 @@ stdenv.mkDerivation {
     mkdir -p $out/bin
     ln -s ${fhs}/bin/antigravity-fhs $out/bin/antigravity
 
-    # Install icon placeholder if file missing
-    # mkdir -p $out/share/pixmaps $out/share/icons/hicolor/512x512/apps
-    # cp ${iconFile} $out/share/pixmaps/google-antigravity.png
-    # cp ${iconFile} $out/share/icons/hicolor/512x512/apps/google-antigravity.png
+    # Icon installation omitted (no icon file)
 
     runHook postInstall
   '';
