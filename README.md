@@ -86,3 +86,8 @@ nix run github:asychin/nixpkgs-skofeycom?dir=waveterm
 ## 📄 License
 
 MIT License
+
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding new packages or improving existing ones.
+
