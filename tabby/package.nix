@@ -24,6 +24,7 @@
 , nspr
 , udev
 , libGL
+, libsecret
 }:
 
 stdenv.mkDerivation rec {
@@ -32,7 +33,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.deb";
-    hash = "sha256-12z9kanfib69b87xcqpf5hf4glcq0hba3165w1aq9w0w1f3bc534";
+    hash = "sha256-ZBS2hgsc8IRV4MWEoRYEmNFHHCzuYtYPWsms6Kya6Ys=";
   };
 
   nativeBuildInputs = [
@@ -60,6 +61,11 @@ stdenv.mkDerivation rec {
     alsa-lib
     nss
     nspr
+    libsecret
+  ];
+
+  autoPatchelfIgnoreMissingDeps = [
+    "libc.musl-x86_64.so.1"
   ];
 
   installPhase = ''
