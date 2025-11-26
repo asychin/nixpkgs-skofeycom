@@ -1,124 +1,33 @@
 { lib
-, stdenv
+, appimageTools
 , fetchurl
-, dpkg
-, autoPatchelfHook
-, makeWrapper
-, atk
-, at-spi2-atk
-, cups
-, libdrm
-, gtk3
-, pango
-, cairo
-, libX11
-, libXcomposite
-, libXdamage
-, libXext
-, libXfixes
-, libXrandr
-, libgbm
-, expat
-, libxcb
-, alsa-lib
-, nss
-, nspr
-, udev
-, libGL
-, libsecret
-, vulkan-loader
-, libxshmfence
-, mesa
 }:
 
-stdenv.mkDerivation rec {
+let
   pname = "tabby";
   version = "1.0.229";
-
+  
   src = fetchurl {
-    url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.deb";
-    hash = "sha256-ZBS2hgsc8IRV4MWEoRYEmNFHHCzuYtYPWsms6Kya6Ys=";
+    url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.AppImage";
+    sha256 = "0w4xcv4mcwcjqvq96q6bvb8ciwl6x0lpx7j8aiwwqq4bpmi0wivn";
   };
 
-  nativeBuildInputs = [
-    dpkg
-    autoPatchelfHook
-    makeWrapper
-  ];
+  appimageContents = appimageTools.extract { inherit pname version src; };
+in
+appimageTools.wrapType2 {
+  inherit pname version src;
 
-  buildInputs = [
-    atk
-    at-spi2-atk
-    cups
-    libdrm
-    gtk3
-    pango
-    cairo
-    libX11
-    libXcomposite
-    libXdamage
-    libXext
-    libXfixes
-    libXrandr
-    libgbm
-    expat
-    libxcb
-    alsa-lib
-    nss
-    nspr
-    libsecret
-    libGL
-    vulkan-loader
-    libxshmfence
-    mesa
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libc.musl-x86_64.so.1"
-  ];
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/app
-    cp -r opt/Tabby $out/app/tabby
-    cp -r usr/share $out/share
-
+  extraInstallCommands = ''
+    install -m 444 -D ${appimageContents}/tabby.desktop $out/share/applications/tabby.desktop
+    install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/tabby.png \
+      $out/share/icons/hicolor/512x512/apps/tabby.png
     substituteInPlace $out/share/applications/tabby.desktop \
-      --replace-fail "/opt/Tabby/tabby" "$out/bin/tabby" \
-      --replace-fail " --no-sandbox" ""
-
-    ln -s $out/app/tabby/tabby $out/bin/tabby
-
-    runHook postInstall
-  '';
-
-  preFixup = ''
-    patchelf --add-needed libGL.so.1 \
-      --add-rpath ${
-        lib.makeLibraryPath [
-          libGL
-          udev
-          libsecret
-          vulkan-loader
-          libxshmfence
-          mesa
-        ]
-      } $out/app/tabby/tabby
-  '';
-
-  postFixup = ''
-    wrapProgram $out/bin/tabby \
-      --run "pkill -f 'tabby' || true" \
-      --run "rm -rf ~/.config/tabby/GPUCache || true" \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret libGL vulkan-loader libxshmfence mesa ]}" \
-      --add-flags "--no-sandbox --disable-gpu-compositing --disable-gpu --use-gl=swiftshader --enable-unsafe-swiftshader --ozone-platform=x11"
+      --replace-fail 'Exec=AppRun' 'Exec=tabby'
   '';
 
   meta = with lib; {
     description = "A terminal for a more modern age";
     homepage = "https://tabby.sh";
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.mit;
     platforms = [ "x86_64-linux" ];
     maintainers = [ ];
