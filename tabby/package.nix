@@ -3,6 +3,7 @@
 , fetchurl
 , dpkg
 , autoPatchelfHook
+, makeWrapper
 , atk
 , at-spi2-atk
 , cups
@@ -25,6 +26,7 @@
 , udev
 , libGL
 , libsecret
+, vulkan-loader
 }:
 
 stdenv.mkDerivation rec {
@@ -39,6 +41,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     dpkg
     autoPatchelfHook
+    makeWrapper
   ];
 
   buildInputs = [
@@ -89,8 +92,17 @@ stdenv.mkDerivation rec {
         lib.makeLibraryPath [
           libGL
           udev
+          libsecret
+          vulkan-loader
         ]
       } $out/app/tabby/tabby
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/tabby \
+      --run "rm -rf ~/.config/tabby/GPUCache" \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret libGL vulkan-loader ]}" \
+      --add-flags "--no-sandbox --disable-gpu-compositing --disable-gpu"
   '';
 
   meta = with lib; {
