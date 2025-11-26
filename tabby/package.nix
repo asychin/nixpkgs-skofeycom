@@ -27,6 +27,8 @@
 , libGL
 , libsecret
 , vulkan-loader
+, libxshmfence
+, mesa
 }:
 
 stdenv.mkDerivation rec {
@@ -65,6 +67,10 @@ stdenv.mkDerivation rec {
     nss
     nspr
     libsecret
+    libGL
+    vulkan-loader
+    libxshmfence
+    mesa
   ];
 
   autoPatchelfIgnoreMissingDeps = [
@@ -95,15 +101,18 @@ stdenv.mkDerivation rec {
           udev
           libsecret
           vulkan-loader
+          libxshmfence
+          mesa
         ]
       } $out/app/tabby/tabby
   '';
 
   postFixup = ''
     wrapProgram $out/bin/tabby \
+      --run "pkill -f 'tabby' || true" \
       --run "rm -rf ~/.config/tabby/GPUCache || true" \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret libGL vulkan-loader ]}" \
-      --add-flags "--no-sandbox --disable-gpu-compositing --disable-gpu"
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret libGL vulkan-loader libxshmfence mesa ]}" \
+      --add-flags "--no-sandbox --disable-gpu-compositing --disable-gpu --use-gl=swiftshader --enable-unsafe-swiftshader --ozone-platform=x11"
   '';
 
   meta = with lib; {
