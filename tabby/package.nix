@@ -79,7 +79,8 @@ stdenv.mkDerivation rec {
     cp -r usr/share $out/share
 
     substituteInPlace $out/share/applications/tabby.desktop \
-      --replace-fail "/opt/Tabby/tabby" "$out/bin/tabby"
+      --replace-fail "/opt/Tabby/tabby" "$out/bin/tabby" \
+      --replace-fail " --no-sandbox" ""
 
     ln -s $out/app/tabby/tabby $out/bin/tabby
 
@@ -100,7 +101,7 @@ stdenv.mkDerivation rec {
 
   postFixup = ''
     wrapProgram $out/bin/tabby \
-      --run "rm -rf ~/.config/tabby/GPUCache" \
+      --run "rm -rf ~/.config/tabby/GPUCache || true" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret libGL vulkan-loader ]}" \
       --add-flags "--no-sandbox --disable-gpu-compositing --disable-gpu"
   '';
