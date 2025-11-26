@@ -1,0 +1,99 @@
+{ lib
+, stdenv
+, fetchurl
+, dpkg
+, autoPatchelfHook
+, atk
+, at-spi2-atk
+, cups
+, libdrm
+, gtk3
+, pango
+, cairo
+, libX11
+, libXcomposite
+, libXdamage
+, libXext
+, libXfixes
+, libXrandr
+, libgbm
+, expat
+, libxcb
+, alsa-lib
+, nss
+, nspr
+, udev
+, libGL
+}:
+
+stdenv.mkDerivation rec {
+  pname = "tabby";
+  version = "1.0.229";
+
+  src = fetchurl {
+    url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.deb";
+    hash = "sha256-12z9kanfib69b87xcqpf5hf4glcq0hba3165w1aq9w0w1f3bc534";
+  };
+
+  nativeBuildInputs = [
+    dpkg
+    autoPatchelfHook
+  ];
+
+  buildInputs = [
+    atk
+    at-spi2-atk
+    cups
+    libdrm
+    gtk3
+    pango
+    cairo
+    libX11
+    libXcomposite
+    libXdamage
+    libXext
+    libXfixes
+    libXrandr
+    libgbm
+    expat
+    libxcb
+    alsa-lib
+    nss
+    nspr
+  ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/app
+    cp -r opt/Tabby $out/app/tabby
+    cp -r usr/share $out/share
+
+    substituteInPlace $out/share/applications/tabby.desktop \
+      --replace-fail "/opt/Tabby/tabby" "$out/bin/tabby"
+
+    ln -s $out/app/tabby/tabby $out/bin/tabby
+
+    runHook postInstall
+  '';
+
+  preFixup = ''
+    patchelf --add-needed libGL.so.1 \
+      --add-rpath ${
+        lib.makeLibraryPath [
+          libGL
+          udev
+        ]
+      } $out/app/tabby/tabby
+  '';
+
+  meta = with lib; {
+    description = "A terminal for a more modern age";
+    homepage = "https://tabby.sh";
+    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    license = licenses.mit;
+    platforms = [ "x86_64-linux" ];
+    maintainers = [ ];
+    mainProgram = "tabby";
+  };
+}
