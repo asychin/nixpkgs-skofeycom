@@ -1,28 +1,94 @@
 { lib
-, appimageTools
+, buildFHSEnv
 , fetchurl
+, stdenv
+, dpkg
 }:
 
 let
-  pname = "tabby";
   version = "1.0.229";
+  pname = "tabby";
   
   src = fetchurl {
-    url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.AppImage";
-    sha256 = "0w4xcv4mcwcjqvq96q6bvb8ciwl6x0lpx7j8aiwwqq4bpmi0wivn";
+    url = "https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.deb";
+    hash = "sha256-ZBS2hgsc8IRV4MWEoRYEmNFHHCzuYtYPWsms6Kya6Ys=";
   };
 
-  appimageContents = appimageTools.extract { inherit pname version src; };
-in
-appimageTools.wrapType2 {
-  inherit pname version src;
+  # Распаковываем deb, чтобы достать контент
+  tabby-pkg = stdenv.mkDerivation {
+    name = "${pname}-pkg-${version}";
+    inherit src;
+    nativeBuildInputs = [ dpkg ];
+    installPhase = ''
+      mkdir -p $out
+      dpkg -x $src $out
+      mv $out/usr/share $out/share
+      mv $out/opt/Tabby $out/lib
+    '';
+  };
+
+in buildFHSEnv {
+  name = pname;
+  targetPkgs = pkgs: with pkgs; [
+    # Базовые либы для Electron
+    alsa-lib
+    at-spi2-atk
+    at-spi2-core
+    atk
+    cairo
+    cups
+    dbus
+    expat
+    fontconfig
+    freetype
+    gdk-pixbuf
+    glib
+    gtk3
+    libdrm
+    libnotify
+    libsecret
+    libuuid
+    libxcb
+    libxkbcommon
+    mesa
+    nss
+    nspr
+    pango
+    systemd
+    udev
+    xorg.libX11
+    xorg.libXcomposite
+    xorg.libXcursor
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXi
+    xorg.libXrandr
+    xorg.libXrender
+    xorg.libXScrnSaver
+    xorg.libXtst
+    # Дополнительно для EGL/Vulkan
+    libGL
+    libglvnd
+    vulkan-loader
+    libxshmfence
+    # Для node-pty и утилит
+    libutil.out
+    util-linux
+  ];
+
+  # Запуск через bash для очистки кэша
+  runScript = "bash -c 'rm -rf ~/.config/tabby/GPUCache || true; exec ${tabby-pkg}/lib/tabby --no-sandbox \"$@\"'";
 
   extraInstallCommands = ''
-    install -m 444 -D ${appimageContents}/tabby.desktop $out/share/applications/tabby.desktop
-    install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/tabby.png \
-      $out/share/icons/hicolor/512x512/apps/tabby.png
+    mkdir -p $out/share
+    ln -s ${tabby-pkg}/share/icons $out/share/icons
+    ln -s ${tabby-pkg}/share/applications $out/share/applications
+    
+    # Фиксим .desktop файл
+    # Нужно заменить путь к бинарнику и убрать лишние флаги, если есть
     substituteInPlace $out/share/applications/tabby.desktop \
-      --replace-fail 'Exec=AppRun' 'Exec=tabby'
+      --replace "/opt/Tabby/tabby" "$out/bin/tabby"
   '';
 
   meta = with lib; {
@@ -31,6 +97,5 @@ appimageTools.wrapType2 {
     license = licenses.mit;
     platforms = [ "x86_64-linux" ];
     maintainers = [ ];
-    mainProgram = "tabby";
   };
 }
