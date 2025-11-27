@@ -70,6 +70,7 @@ in buildFHSEnv {
     # Дополнительно для EGL/Vulkan
     libGL
     libglvnd
+    libgbm
     vulkan-loader
     libxshmfence
     # Для node-pty и утилит
