@@ -21,7 +21,6 @@
         {
           antigravity = pkgs.callPackage ./antigravity/package.nix { };
           waveterm = pkgs.callPackage ./waveterm/package.nix { };
-          tabby = pkgs.callPackage ./tabby/package.nix { };
         });
 
       nixosModules = {
