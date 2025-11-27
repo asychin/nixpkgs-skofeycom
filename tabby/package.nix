@@ -73,7 +73,6 @@ in buildFHSEnv {
     vulkan-loader
     libxshmfence
     # Для node-pty и утилит
-    libutil.out
     util-linux
   ];
 
