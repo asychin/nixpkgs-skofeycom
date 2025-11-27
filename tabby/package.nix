@@ -82,7 +82,10 @@ in buildFHSEnv {
   extraInstallCommands = ''
     mkdir -p $out/share
     ln -s ${tabby-pkg}/share/icons $out/share/icons
-    ln -s ${tabby-pkg}/share/applications $out/share/applications
+    
+    mkdir -p $out/share/applications
+    cp ${tabby-pkg}/share/applications/tabby.desktop $out/share/applications/tabby.desktop
+    chmod +w $out/share/applications/tabby.desktop
     
     # Фиксим .desktop файл
     # Нужно заменить путь к бинарнику и убрать лишние флаги, если есть
