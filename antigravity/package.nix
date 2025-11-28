@@ -55,7 +55,7 @@ let
 
   src = fetchurl {
     url = "https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/${version}/linux-x64/Antigravity.tar.gz";
-    sha256 = "sha256-TgMVGlV0PPMPrFlauzQ8nrWjtqgNJUATbXW06tgHIRI=";
+    sha256 = "sha256-GTpKYdpgjFJvvDKWcOiSqwqWHTplzklIXeHKCIBORy0=";
   };
 
   # Create a browser wrapper that uses the user's existing profile
