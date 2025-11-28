@@ -176,8 +176,7 @@ let
   };
 
   # Icon file
-  # Note: You need to add the icon file to icons/antigravity.png or remove this part
-  # iconFile = ./icons/antigravity.png;
+  iconFile = ./icons/antigravity.png;
 
 in
 stdenv.mkDerivation {
@@ -196,7 +195,10 @@ stdenv.mkDerivation {
     mkdir -p $out/bin
     ln -s ${fhs}/bin/antigravity-fhs $out/bin/antigravity
 
-    # Icon installation omitted (no icon file)
+    # Install icon from local icons directory
+    mkdir -p $out/share/pixmaps $out/share/icons/hicolor/512x512/apps
+    cp ${iconFile} $out/share/pixmaps/google-antigravity.png
+    cp ${iconFile} $out/share/icons/hicolor/512x512/apps/google-antigravity.png
 
     runHook postInstall
   '';
