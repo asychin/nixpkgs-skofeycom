@@ -34,7 +34,7 @@
 
 let
   pname = "google-antigravity";
-  version = "1.11.5-5234145629700096";
+  version = "1.11.9-4787439284912128";
 
   isAarch64 = stdenv.hostPlatform.system == "aarch64-linux";
 
