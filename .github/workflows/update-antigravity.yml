@@ -1,0 +1,31 @@
+name: Update Antigravity
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version of Antigravity'
+        required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: cachix/install-nix-action@v26
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Update package
+        run: ./antigravity/update.sh "${{ inputs.version }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(antigravity): update to ${{ inputs.version }}"
+          title: "chore(antigravity): update to ${{ inputs.version }}"
+          body: "Updates Antigravity to version ${{ inputs.version }}"
+          branch: "update-antigravity-${{ inputs.version }}"
+          delete-branch: true
