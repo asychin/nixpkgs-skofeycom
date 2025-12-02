@@ -146,6 +146,19 @@ let
         xorg.libxcb
         xorg.libxshmfence
         zlib
+        
+        # Common dev tools for IDE
+        git
+        openssh
+        curl
+        wget
+        docker
+        gnumake
+        gcc
+        ripgrep
+        fd
+        file
+        which
       ]) ++ lib.optional (browserPkg != null) browserPkg;
 
     runScript = writeShellScript "antigravity-wrapper" ''
